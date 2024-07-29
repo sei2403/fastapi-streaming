@@ -1,0 +1,10 @@
+old/
+results/
+env/
+__pycache__/
+chunks.zip
+raw.xml
+output.txt
+keep_chinese_only.py
+create_file_chunks.py
+dictionary.txt
