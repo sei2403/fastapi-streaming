@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
         file_id = int(data)
         
         # 打開指定文件
-        with open(f"chunks/chunks_{file_id}.txt", 'r', encoding="utf-8") as f:
+        with open(f"chunks/chunk_{file_id}.txt", 'r', encoding="utf-8") as f:
             content = f.read()
         
         # 按單詞分割文件內容

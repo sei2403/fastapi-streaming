@@ -16,11 +16,15 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
+
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
     
     async def send_text(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+        try:
+            await websocket.send_text(message)
+        except Exception as e:
+            print(e)
 
 
 manager = ConnectionManager()
@@ -28,7 +32,7 @@ manager = ConnectionManager()
 # 定義 WebSocket 路由
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
-    
+    midtime = []
     # 接受 WebSocket 連接
     await manager.connect(websocket)
 
@@ -40,7 +44,7 @@ async def websocket_endpoint(websocket: WebSocket):
         file_id = int(data)
         
         # 打開指定文件
-        with open(f"chunks/chunks_{file_id}.txt", 'r', encoding='utf-8') as f:
+        with open(f"chunks/chunk_{file_id}.txt", 'r', encoding='utf-8') as f:
             content = f.read()
         
         # 按單詞分割文件內容
@@ -52,6 +56,7 @@ async def websocket_endpoint(websocket: WebSocket):
             
             response = {
                 "msg": word,
+                "chunk_time": time.time(),
             }
 
             # 將字典轉換為 JSON 字符串
@@ -59,9 +64,10 @@ async def websocket_endpoint(websocket: WebSocket):
             
             # 回傳消息給客戶端
             await manager.send_text(response_str, websocket)
+            midtime.append(time.time())
         
         end_time = time.time()
-        
+
         end_message = {
             "server_time": f"{(end_time-start_time):.10f}",
             "msg": "\\END"
@@ -73,8 +79,11 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         # 處理可能的錯誤
         manager.disconnect(websocket)
-        await websocket.send_text(f"Error: {str(e)}")
-        await websocket.close()
+        try:
+            await websocket.send_text(f"Error: {str(e)}")
+            await websocket.close()
+        except Exception as e:
+            print(type(e))
 
 
-uvicorn.run(app, host="0.0.0.0", port=8000)
+uvicorn.run(app, host="0.0.0.0", port=8000, ws_ping_interval=None, ws_ping_timeout=None, ws_max_queue=1e6)

@@ -1,3 +1,4 @@
+# 載入相關套件
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 import time
@@ -18,7 +19,7 @@ async def event_generator(file_path: str, process):
         async for line in f:
             # 逐行分割為單詞
             for word in list(line):
-                # 獲取進程的內存使用量，單位為 MB
+                # 獲取進程的內存使用量
                 memory_info = process.memory_info().rss
                 # 構建消息字典，包含單詞和內存使用量
                 message = {"msg": word, "memory_usage":memory_info}
